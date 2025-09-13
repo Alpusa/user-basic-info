@@ -5,6 +5,7 @@ import '../bloc/user_form/user_form_bloc.dart';
 import '../bloc/user_form/user_form_event.dart';
 import '../bloc/user_form/user_form_state.dart';
 import '../../core/errors/failure.dart';
+import 'package:user_basic_info/l10n/app_localizations.dart';
 
 class CreateOrEditUserPage extends StatelessWidget {
   // controladores para cada campo del formulario
@@ -13,7 +14,7 @@ class CreateOrEditUserPage extends StatelessWidget {
   final TextEditingController _fechaCtrl = TextEditingController();
 
   CreateOrEditUserPage({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -29,8 +30,9 @@ class CreateOrEditUserPage extends StatelessWidget {
         centerTitle: true,
         title: BlocBuilder<UserFormBloc, UserFormState>(
           builder: (context, state) {
+            final t = AppLocalizations.of(context)!;
             return Text(
-              state.isEdit ? 'Editar cuenta' : 'Crear cuenta',
+              state.isEdit ? t.editAccount : t.createAccount,
               style: TextStyle(
                 color: cs.onSurface,
                 fontWeight: FontWeight.w600,
@@ -41,21 +43,26 @@ class CreateOrEditUserPage extends StatelessWidget {
       ),
       body: BlocConsumer<UserFormBloc, UserFormState>(
         listenWhen: (p, c) =>
-            p.isSuccess != c.isSuccess || p.failure != c.failure || p.apellido != c.apellido || p.nombre != c.nombre || p.fechaText != c.fechaText,
+            p.isSuccess != c.isSuccess ||
+            p.failure != c.failure ||
+            p.apellido != c.apellido ||
+            p.nombre != c.nombre ||
+            p.fechaText != c.fechaText,
         listener: (context, state) {
           if (state.isSuccess) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Guardado con éxito')));
+            ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.savedSuccessfully)));
             Navigator.of(context).pop(true);
           }
           if (state.failure != null) {
             final Failure f = state.failure!;
+            final t = AppLocalizations.of(context)!;
             final msg = f.when(
-              unexpected: (m) => m ?? 'Ocurrió un error inesperado',
-              network: (m) => m ?? 'Problema de red',
-              notFound: (m) => m ?? 'No encontrado',
-              validation: (m) => m ?? 'Error de validación',
+              unexpected: (m) => m ?? t.unexpectedError,
+              network: (m) => m ?? t.networkError,
+              notFound: (m) => m ?? t.notFoundError,
+              validation: (m) => m ?? t.validationError,
             );
             ScaffoldMessenger.of(
               context,
@@ -80,40 +87,35 @@ class CreateOrEditUserPage extends StatelessWidget {
               children: [
                 const SizedBox(height: 8),
                 Text(
-                  'Nombre',
+                  AppLocalizations.of(context)!.firstName,
                   style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
-
                   controller: _nombreCtrl,
                   decoration: InputDecoration(
-                    hintText: 'Ingresa tu nombre',
+                    hintText: AppLocalizations.of(context)!.enterFirstName,
                     hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
-                    errorText: submitted && !state.isValidNombre ? 'Campo requerido' : null,
+                    errorText: submitted && !state.isValidNombre ? AppLocalizations.of(context)!.requiredField : null,
                   ),
-
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Apellido',
+                  AppLocalizations.of(context)!.lastName,
                   style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _apellidoCtrl,
                   decoration: InputDecoration(
-                    hintText: 'Ingresa tu apellido',
+                    hintText: AppLocalizations.of(context)!.enterLastName,
                     hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
-                    errorText: submitted && !state.isValidApellido
-                        ? 'Campo requerido'
-                        : null,
+                    errorText: submitted && !state.isValidApellido ? AppLocalizations.of(context)!.requiredField : null,
                   ),
-
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Fecha de nacimiento',
+                  AppLocalizations.of(context)!.birthDate,
                   style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
                 ),
                 const SizedBox(height: 6),
@@ -125,7 +127,9 @@ class CreateOrEditUserPage extends StatelessWidget {
                     final picked = await showDatePicker(
                       context: context,
                       // La fecha mínima debe ser la actual; inicial también dentro del rango
-                      initialDate: state.fechaNacimiento != null && !state.fechaNacimiento!.isBefore(today)
+                      initialDate:
+                          state.fechaNacimiento != null &&
+                              !state.fechaNacimiento!.isBefore(today)
                           ? state.fechaNacimiento!
                           : today,
                       firstDate: DateTime(1900),
@@ -142,15 +146,15 @@ class CreateOrEditUserPage extends StatelessWidget {
                       controller: _fechaCtrl,
                       readOnly: true,
                       decoration: InputDecoration(
-                        hintText: 'DD/MM/AAAA',
-                        hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
+                        hintText: AppLocalizations.of(context)!.birthDateHint,
+                        hintStyle: TextStyle(
+                          color: cs.onSurface.withOpacity(0.35),
+                        ),
                         suffixIcon: Icon(
                           Icons.calendar_today,
                           color: cs.onSurface.withOpacity(0.35),
                         ),
-                        errorText: submitted && !state.isValidFecha
-                            ? 'Fecha inválida'
-                            : null,
+                        errorText: submitted && !state.isValidFecha ? AppLocalizations.of(context)!.invalidDate : null,
                       ),
                     ),
                   ),
@@ -172,7 +176,7 @@ class CreateOrEditUserPage extends StatelessWidget {
                           },
                     style: Theme.of(context).elevatedButtonTheme.style,
                     child: Text(
-                      state.isSubmitting ? 'Guardando...' : 'Siguiente',
+                      state.isSubmitting ? AppLocalizations.of(context)!.saving : AppLocalizations.of(context)!.next,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -185,4 +189,3 @@ class CreateOrEditUserPage extends StatelessWidget {
     );
   }
 }
-

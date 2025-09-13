@@ -56,7 +56,9 @@ final GoRouter router = GoRouter(
               builder: (context, state) => _responsiveWrapper(
                 context,
                 BlocProvider(
-                  create: (_) => sl<AddressesListBloc>()..add(const AddressesListEvent.loadRequested()),
+                  create: (_) =>
+                      sl<AddressesListBloc>()
+                        ..add(const AddressesListEvent.loadRequested()),
                   child: const AddressesPage(),
                 ),
               ),
@@ -68,14 +70,15 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: NamesRouter.settings,
-              builder: (context, state) =>
-                  _responsiveWrapper(
-                    context,
-                    BlocProvider(
-                      create: (_) => sl<SettingsBloc>()..add(const SettingsEvent.loadRequested()),
-                      child: const SettingsPage(),
-                    ),
-                  ),
+              builder: (context, state) => _responsiveWrapper(
+                context,
+                BlocProvider(
+                  create: (_) =>
+                      sl<SettingsBloc>()
+                        ..add(const SettingsEvent.loadRequested()),
+                  child: const SettingsPage(),
+                ),
+              ),
             ),
           ],
         ),
@@ -99,7 +102,9 @@ final GoRouter router = GoRouter(
           BlocProvider(
             create: (_) {
               final bloc = sl<AddressFormBloc>();
-              bloc.add(AddressFormEvent.initialized(addressId: id, userId: userId));
+              bloc.add(
+                AddressFormEvent.initialized(addressId: id, userId: userId),
+              );
               return bloc;
             },
             child: CreateOrEditAddressPage(),
@@ -116,7 +121,7 @@ final GoRouter router = GoRouter(
           BlocProvider(
             create: (_) {
               final cubit = sl<UserSummaryCubit>();
-              cubit.load(id??'');
+              cubit.load(id ?? '');
               return cubit;
             },
             child: UserSummaryPage(),

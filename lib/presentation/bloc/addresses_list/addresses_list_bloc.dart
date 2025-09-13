@@ -9,21 +9,31 @@ class AddressesListBloc extends Bloc<AddressesListEvent, AddressesListState> {
   final GetAllAddresses _getAll;
   final SearchAddresses _search;
 
-  AddressesListBloc(this._getAll, this._search) : super(const AddressesListState.initial()) {
-  on<LoadRequested>(_handleLoad);
-  on<SearchRequested>(_handleSearch);
+  AddressesListBloc(this._getAll, this._search)
+    : super(const AddressesListState.initial()) {
+    on<LoadRequested>(_handleLoad);
+    on<SearchRequested>(_handleSearch);
   }
 
-  Future<void> _handleLoad(LoadRequested event, Emitter<AddressesListState> emit) async {
+  Future<void> _handleLoad(
+    LoadRequested event,
+    Emitter<AddressesListState> emit,
+  ) async {
     await _performLoad(emit);
   }
 
-  Future<void> _handleSearch(SearchRequested event, Emitter<AddressesListState> emit) async {
+  Future<void> _handleSearch(
+    SearchRequested event,
+    Emitter<AddressesListState> emit,
+  ) async {
     final q = event.query ?? '';
     final pais = event.pais;
     final departamento = event.departamento;
     final municipio = event.municipio;
-    if (q.trim().isEmpty && pais == null && departamento == null && municipio == null) {
+    if (q.trim().isEmpty &&
+        pais == null &&
+        departamento == null &&
+        municipio == null) {
       return _performLoad(emit);
     }
     emit(const AddressesListState.loading());

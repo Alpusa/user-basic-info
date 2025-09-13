@@ -19,7 +19,7 @@ class AppLoading extends StatelessWidget {
           if (message != null) ...[
             const SizedBox(height: 12),
             Text(message!, style: theme.textTheme.bodyMedium),
-          ]
+          ],
         ],
       ),
     );

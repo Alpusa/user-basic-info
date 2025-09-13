@@ -29,6 +29,7 @@ import 'presentation/bloc/address_form/address_form_bloc.dart';
 import 'presentation/bloc/addresses_list/addresses_list_bloc.dart';
 import 'presentation/bloc/settings/settings_bloc.dart';
 import 'presentation/bloc/theme/theme_bloc.dart';
+import 'presentation/bloc/locale/locale_bloc.dart';
 import 'data/models/theme_preference_model.dart';
 
 final sl = GetIt.instance;
@@ -83,6 +84,8 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => AddressesListBloc(sl(), sl()));
   sl.registerFactory(() => UserSummaryCubit(sl(), sl()));
   sl.registerFactory(() => SettingsBloc(sl(), sl(), sl(), sl()));
+  sl.registerLazySingleton(() => LocaleBloc(preferencesBox: preferencesBox, initial: null));
+  // Ensure locale preference model is recognized by Hive (adapter generated separately)
   // ThemeBloc: read stored theme object if exists
   final storedPref = preferencesBox.get('theme_pref') as ThemePreferenceModel?;
   ThemeMode? initialMode;
@@ -98,16 +101,22 @@ Future<void> initDependencies() async {
         initialMode = ThemeMode.system;
     }
   }
-  sl.registerLazySingleton(() => ThemeBloc(preferencesBox: preferencesBox, initial: initialMode));
-  sl.registerFactory(() => UserFormBloc(
-        sl(), // SaveUser
-        sl(), // UpdateUser
-        sl(), // GetUserById
-      ));
-  sl.registerFactory(() => AddressFormBloc(
-        sl(), // SaveAddress
-        sl(), // UpdateAddress
-        sl(), // GetAddressById
-        sl(), // GetUserById
-      ));
+  sl.registerLazySingleton(
+    () => ThemeBloc(preferencesBox: preferencesBox, initial: initialMode),
+  );
+  sl.registerFactory(
+    () => UserFormBloc(
+      sl(), // SaveUser
+      sl(), // UpdateUser
+      sl(), // GetUserById
+    ),
+  );
+  sl.registerFactory(
+    () => AddressFormBloc(
+      sl(), // SaveAddress
+      sl(), // UpdateAddress
+      sl(), // GetAddressById
+      sl(), // GetUserById
+    ),
+  );
 }

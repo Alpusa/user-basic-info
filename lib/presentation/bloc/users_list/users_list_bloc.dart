@@ -10,16 +10,22 @@ class UsersListBloc extends Bloc<UsersListEvent, UsersListState> {
   final SearchUsers _searchUsers;
 
   UsersListBloc(this._getAllUsers, this._searchUsers)
-      : super(const UsersListState.initial()) {
+    : super(const UsersListState.initial()) {
     on<LoadRequested>(_handleLoad);
     on<SearchRequested>(_handleSearch);
   }
 
-  Future<void> _handleLoad(LoadRequested event, Emitter<UsersListState> emit) async {
+  Future<void> _handleLoad(
+    LoadRequested event,
+    Emitter<UsersListState> emit,
+  ) async {
     await _performLoad(emit);
   }
 
-  Future<void> _handleSearch(SearchRequested event, Emitter<UsersListState> emit) async {
+  Future<void> _handleSearch(
+    SearchRequested event,
+    Emitter<UsersListState> emit,
+  ) async {
     final q = event.query;
     if (q.trim().isEmpty) {
       return _performLoad(emit);

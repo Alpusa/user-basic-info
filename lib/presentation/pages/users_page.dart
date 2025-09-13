@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/user.dart';
 import '../../core/router/names_router.dart';
+import '../../l10n/app_localizations.dart';
 import '../bloc/users_list/users_list_bloc.dart';
 import '../bloc/users_list/users_list_state.dart';
 import '../bloc/users_list/users_list_event.dart';
@@ -46,10 +47,10 @@ class _UsersPageState extends State<UsersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Usuarios'),
+        title: Text(AppLocalizations.of(context)!.users),
         actions: [
           IconButton(
-            tooltip: 'Refrescar',
+            tooltip: AppLocalizations.of(context)!.refresh,
             icon: const Icon(Icons.refresh),
             onPressed: () {
               final query = _searchCtrl.text.trim();
@@ -66,7 +67,9 @@ class _UsersPageState extends State<UsersPage> {
             onPressed: () async {
               final result = await context.push(NamesRouter.createEditUser);
               if (result == true && context.mounted) {
-                context.read<UsersListBloc>().add(const UsersListEvent.loadRequested());
+                context.read<UsersListBloc>().add(
+                  const UsersListEvent.loadRequested(),
+                );
               }
             },
           ),
@@ -81,17 +84,19 @@ class _UsersPageState extends State<UsersPage> {
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                hintText: 'Buscar usuarios',
+                hintText: AppLocalizations.of(context)!.searchUsers,
                 suffixIcon: ValueListenableBuilder<TextEditingValue>(
                   valueListenable: _searchCtrl,
                   builder: (context, value, _) {
                     if (value.text.isEmpty) return const SizedBox.shrink();
                     return IconButton(
-                      tooltip: 'Limpiar',
+                      tooltip: AppLocalizations.of(context)!.clear,
                       icon: const Icon(Icons.clear),
                       onPressed: () {
                         _searchCtrl.clear();
-                        context.read<UsersListBloc>().add(const UsersListEvent.loadRequested());
+                        context.read<UsersListBloc>().add(
+                          const UsersListEvent.loadRequested(),
+                        );
                       },
                     );
                   },
@@ -107,31 +112,42 @@ class _UsersPageState extends State<UsersPage> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                context.read<UsersListBloc>().add(const UsersListEvent.loadRequested());
+                context.read<UsersListBloc>().add(
+                  const UsersListEvent.loadRequested(),
+                );
               },
               child: BlocBuilder<UsersListBloc, UsersListState>(
                 builder: (context, state) {
                   return state.when(
                     initial: () => ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [SizedBox(height: 240), AppLoading(message: 'Cargando usuarios...')],
+                      children: [
+                        const SizedBox(height: 240),
+                        AppLoading(message: AppLocalizations.of(context)!.loadingUsers),
+                      ],
                     ),
                     loading: () => ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [SizedBox(height: 240), AppLoading(message: 'Cargando usuarios...')],
+                      children: [
+                        const SizedBox(height: 240),
+                        AppLoading(message: AppLocalizations.of(context)!.loadingUsers),
+                      ],
                     ),
                     failure: (failure) => ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         const SizedBox(height: 240),
-                        Center(child: Text('Error: ${_failureMessage(failure)}')),
+                        Center(child: Text(_failureMessage(context, failure))),
                       ],
                     ),
                     success: (users) {
                       if (users.isEmpty) {
                         return ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          children: const [SizedBox(height: 240), Center(child: Text('Sin usuarios'))],
+                          children: [
+                            const SizedBox(height: 240),
+                            Center(child: Text(AppLocalizations.of(context)!.noUsers)),
+                          ],
                         );
                       }
                       return ListView.separated(
@@ -151,11 +167,13 @@ class _UsersPageState extends State<UsersPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Crear usuario',
+        tooltip: AppLocalizations.of(context)!.createUser,
         onPressed: () async {
           final result = await context.push(NamesRouter.createEditUser);
           if (result == true && context.mounted) {
-            context.read<UsersListBloc>().add(const UsersListEvent.loadRequested());
+            context.read<UsersListBloc>().add(
+              const UsersListEvent.loadRequested(),
+            );
           }
         },
         child: const Icon(Icons.add),
@@ -163,12 +181,13 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
-  String _failureMessage(Failure failure) {
+  String _failureMessage(BuildContext context, Failure failure) {
+    final t = AppLocalizations.of(context)!;
     return failure.when(
-      unexpected: (m) => m ?? 'Ocurrió un error inesperado',
-      network: (m) => m ?? 'Problema de red',
-      notFound: (m) => m ?? 'No encontrado',
-      validation: (m) => m ?? 'Error de validación',
+      unexpected: (m) => m ?? t.unexpectedError,
+      network: (m) => m ?? t.networkError,
+      notFound: (m) => m ?? t.notFoundError,
+      validation: (m) => m ?? t.validationError,
     );
   }
 }
@@ -179,14 +198,18 @@ class _UserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials = '${user.nombre.isNotEmpty ? user.nombre[0] : ''}${user.apellido.isNotEmpty ? user.apellido[0] : ''}'.toUpperCase();
+    final initials =
+        '${user.nombre.isNotEmpty ? user.nombre[0] : ''}${user.apellido.isNotEmpty ? user.apellido[0] : ''}'
+            .toUpperCase();
     return ListTile(
       leading: CircleAvatar(child: Text(initials)),
       title: Text('${user.nombre} ${user.apellido}'),
       onTap: () async {
         await context.push('${NamesRouter.viewUser}?id=${user.id}');
         if (context.mounted) {
-          context.read<UsersListBloc>().add(const UsersListEvent.loadRequested());
+          context.read<UsersListBloc>().add(
+            const UsersListEvent.loadRequested(),
+          );
         }
       },
     );

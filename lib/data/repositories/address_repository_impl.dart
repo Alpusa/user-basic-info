@@ -15,7 +15,10 @@ class AddressRepositoryImpl implements AddressRepository {
   final Box<UserModel> _usersBox = GetIt.I<Box<UserModel>>();
 
   @override
-  Future<Either<Failure, Unit>> saveAddressForUser(d.User user, d.Address address) async {
+  Future<Either<Failure, Unit>> saveAddressForUser(
+    d.User user,
+    d.Address address,
+  ) async {
     try {
       final userId = user.id.isEmpty ? const Uuid().v4() : user.id;
       final userModel = UserModel(
@@ -47,13 +50,15 @@ class AddressRepositoryImpl implements AddressRepository {
     try {
       final m = _addressesBox.get(id);
       if (m == null) return right(null);
-      return right(d.Address(
-        id: m.id,
-        pais: m.pais,
-        departamento: m.departamento,
-        municipio: m.municipio,
-        direccion: m.direccion,
-      ));
+      return right(
+        d.Address(
+          id: m.id,
+          pais: m.pais,
+          departamento: m.departamento,
+          municipio: m.municipio,
+          direccion: m.direccion,
+        ),
+      );
     } catch (e) {
       return left(_mapError(e));
     }
@@ -80,7 +85,9 @@ class AddressRepositoryImpl implements AddressRepository {
   }
 
   @override
-  Future<Either<Failure, List<d.Address>>> getAddressesByUserId(String userId) async {
+  Future<Either<Failure, List<d.Address>>> getAddressesByUserId(
+    String userId,
+  ) async {
     try {
       final list = _addressesBox.values
           .where((m) => m.userId == userId)
@@ -151,10 +158,14 @@ class AddressRepositoryImpl implements AddressRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateAddress(String id, d.Address address) async {
+  Future<Either<Failure, Unit>> updateAddress(
+    String id,
+    d.Address address,
+  ) async {
     try {
       final existing = _addressesBox.get(id);
-      if (existing == null) return left(const Failure.notFound('Dirección no existe'));
+      if (existing == null)
+        return left(const Failure.notFound('Dirección no existe'));
       final updated = AddressModel(
         id: id,
         userId: address.userId ?? existing.userId,

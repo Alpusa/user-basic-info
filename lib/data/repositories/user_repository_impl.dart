@@ -35,12 +35,14 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final model = _usersBox.get(id);
       if (model == null) return right(null);
-      return right(User(
-        id: model.id,
-        nombre: model.nombre,
-        apellido: model.apellido,
-        fechaNacimiento: model.fechaNacimiento,
-      ));
+      return right(
+        User(
+          id: model.id,
+          nombre: model.nombre,
+          apellido: model.apellido,
+          fechaNacimiento: model.fechaNacimiento,
+        ),
+      );
     } catch (e) {
       return left(_mapError(e));
     }

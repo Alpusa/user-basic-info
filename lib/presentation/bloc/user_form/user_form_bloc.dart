@@ -15,48 +15,73 @@ class UserFormBloc extends Bloc<UserFormEvent, UserFormState> {
   final GetUserById _getUserById;
 
   UserFormBloc(this._saveUser, this._updateUser, this._getUserById)
-      : super(const UserFormState()) {
+    : super(const UserFormState()) {
     on<UserFormEvent>((event, emit) async {
       await event.map(
         initialized: (e) async => _onInitialized(e.userId, emit),
-        submitPressed: (e) async => _onSubmitPressed(e.nombre, e.apellido, e.fechaNacimiento, emit),
+        submitPressed: (e) async =>
+            _onSubmitPressed(e.nombre, e.apellido, e.fechaNacimiento, emit),
       );
     });
   }
 
-  Future<void> _onInitialized(String? userId, Emitter<UserFormState> emit) async {
+  Future<void> _onInitialized(
+    String? userId,
+    Emitter<UserFormState> emit,
+  ) async {
     if (userId == null || userId.isEmpty) return;
     final result = await _getUserById(userId);
     result.fold(
       (f) => emit(state.copyWith(isEdit: true, id: userId, failure: f)),
       (user) {
         if (user == null) {
-          emit(state.copyWith(
-            isEdit: true,
-            id: userId,
-            failure: const Failure.notFound('Usuario no encontrado'),
-          ));
+          emit(
+            state.copyWith(
+              isEdit: true,
+              id: userId,
+              failure: const Failure.notFound('Usuario no encontrado'),
+            ),
+          );
           return;
         }
         final fechaText =
             '${user.fechaNacimiento.day.toString().padLeft(2, '0')}/${user.fechaNacimiento.month.toString().padLeft(2, '0')}/${user.fechaNacimiento.year}';
-        emit(state.copyWith(
-          isEdit: true,
-          id: user.id.isNotEmpty ? user.id : userId,
-          nombre: user.nombre,
-          apellido: user.apellido,
-          fechaNacimiento: user.fechaNacimiento,
-          fechaText: fechaText,
-          failure: null,
-        ));
+        emit(
+          state.copyWith(
+            isEdit: true,
+            id: user.id.isNotEmpty ? user.id : userId,
+            nombre: user.nombre,
+            apellido: user.apellido,
+            fechaNacimiento: user.fechaNacimiento,
+            fechaText: fechaText,
+            failure: null,
+          ),
+        );
       },
     );
   }
 
-  Future<void> _onSubmitPressed(String? nombre, String? apellido, String? fechaNacimiento, Emitter<UserFormState> emit) async {
-    emit(state.copyWith(isSubmitting: true, submitted: true, failure: null, isSuccess: false));
+  Future<void> _onSubmitPressed(
+    String? nombre,
+    String? apellido,
+    String? fechaNacimiento,
+    Emitter<UserFormState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        submitted: true,
+        failure: null,
+        isSuccess: false,
+      ),
+    );
 
-    if (!(nombre != null && nombre.isNotEmpty && apellido != null && apellido.isNotEmpty && fechaNacimiento != null && fechaNacimiento.isNotEmpty)) {
+    if (!(nombre != null &&
+        nombre.isNotEmpty &&
+        apellido != null &&
+        apellido.isNotEmpty &&
+        fechaNacimiento != null &&
+        fechaNacimiento.isNotEmpty)) {
       emit(state.copyWith(isSubmitting: false));
       return;
     }
@@ -66,10 +91,14 @@ class UserFormBloc extends Bloc<UserFormEvent, UserFormState> {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       if (parsed.isAfter(today)) {
-        emit(state.copyWith(
-          isSubmitting: false,
-          failure: const Failure.validation('La fecha no puede ser posterior a hoy'),
-        ));
+        emit(
+          state.copyWith(
+            isSubmitting: false,
+            failure: const Failure.validation(
+              'La fecha no puede ser posterior a hoy',
+            ),
+          ),
+        );
         return;
       }
     }
@@ -81,8 +110,9 @@ class UserFormBloc extends Bloc<UserFormEvent, UserFormState> {
       fechaNacimiento: parsed!,
     );
 
-    final Either<Failure, Unit> result =
-        state.isEdit ? await _updateUser(user) : await _saveUser(user);
+    final Either<Failure, Unit> result = state.isEdit
+        ? await _updateUser(user)
+        : await _saveUser(user);
 
     result.fold(
       (f) => emit(state.copyWith(isSubmitting: false, failure: f)),

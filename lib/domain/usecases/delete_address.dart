@@ -11,5 +11,6 @@ class DeleteAddress {
 class DeleteAddressesByUserId {
   final AddressRepository _repo;
   DeleteAddressesByUserId(this._repo);
-  Future<Either<Failure, Unit>> call(String userId) => _repo.deleteAddressesByUserId(userId);
+  Future<Either<Failure, Unit>> call(String userId) =>
+      _repo.deleteAddressesByUserId(userId);
 }

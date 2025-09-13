@@ -15,5 +15,6 @@ class UserSummaryState with _$UserSummaryState {
   }) = _UserSummaryState;
 
   const UserSummaryState._();
-  factory UserSummaryState.initial() => const UserSummaryState(isLoading: false);
+  factory UserSummaryState.initial() =>
+      const UserSummaryState(isLoading: false);
 }

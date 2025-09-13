@@ -13,6 +13,7 @@ import '../../domain/usecases/delete_address.dart';
 import '../../core/router/names_router.dart';
 import '../widgets/app_loading.dart';
 import '../../core/errors/failure.dart';
+import 'package:user_basic_info/l10n/app_localizations.dart';
 
 class AddressesPage extends StatefulWidget {
   const AddressesPage({super.key});
@@ -35,7 +36,9 @@ class _AddressesPageState extends State<AddressesPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AddressesListBloc>().add(const AddressesListEvent.loadRequested());
+    context.read<AddressesListBloc>().add(
+      const AddressesListEvent.loadRequested(),
+    );
     _loadCscData();
   }
 
@@ -43,7 +46,8 @@ class _AddressesPageState extends State<AddressesPage> {
     try {
       await _cscData.load();
       if (mounted) {
-        _countries = List<String>.from(_cscData.countries)..sort((a, b) => a.compareTo(b));
+        _countries = List<String>.from(_cscData.countries)
+          ..sort((a, b) => a.compareTo(b));
         setState(() {
           _dataLoaded = true;
         });
@@ -80,19 +84,19 @@ class _AddressesPageState extends State<AddressesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Direcciones'),
+        title: Text(AppLocalizations.of(context)!.addresses),
         actions: [
           IconButton(
-            tooltip: 'Refrescar',
+            tooltip: AppLocalizations.of(context)!.refresh,
             icon: const Icon(Icons.refresh),
             onPressed: () {
               final query = _searchCtrl.text.trim();
               final bloc = context.read<AddressesListBloc>();
-                      if (query.isEmpty) {
-                        bloc.add(const AddressesListEvent.loadRequested());
-                      } else {
-                        bloc.add(AddressesListEvent.searchRequested(query: query));
-                      }
+              if (query.isEmpty) {
+                bloc.add(const AddressesListEvent.loadRequested());
+              } else {
+                bloc.add(AddressesListEvent.searchRequested(query: query));
+              }
             },
           ),
         ],
@@ -109,17 +113,19 @@ class _AddressesPageState extends State<AddressesPage> {
                   onChanged: _onSearchChanged,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
-                    hintText: 'Buscar direcciones',
+                    hintText: AppLocalizations.of(context)!.searchAddresses,
                     suffixIcon: ValueListenableBuilder<TextEditingValue>(
                       valueListenable: _searchCtrl,
                       builder: (context, value, _) {
                         if (value.text.isEmpty) return const SizedBox.shrink();
                         return IconButton(
-                          tooltip: 'Limpiar',
+                          tooltip: AppLocalizations.of(context)!.clear,
                           icon: const Icon(Icons.clear),
                           onPressed: () {
                             _searchCtrl.clear();
-                            context.read<AddressesListBloc>().add(const AddressesListEvent.loadRequested());
+                            context.read<AddressesListBloc>().add(
+                              const AddressesListEvent.loadRequested(),
+                            );
                           },
                         );
                       },
@@ -143,7 +149,9 @@ class _AddressesPageState extends State<AddressesPage> {
                         return _countries;
                       }
                       return _countries.where((String option) {
-                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
                     onSelected: (String selection) {
@@ -151,24 +159,32 @@ class _AddressesPageState extends State<AddressesPage> {
                       // limpiar dependientes
                       _departamentoCtrl.clear();
                       _municipioCtrl.clear();
-                      context.read<AddressesListBloc>().add(AddressesListEvent.searchRequested(pais: selection));
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(labelText: 'País'),
+                      context.read<AddressesListBloc>().add(
+                        AddressesListEvent.searchRequested(pais: selection),
                       );
                     },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.country),
+                          );
+                        },
                   ),
                   const SizedBox(height: 8),
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      final selectedCountry = _paisCtrl.text.isNotEmpty ? _paisCtrl.text : null;
-                      if (selectedCountry == null) return const Iterable<String>.empty();
+                      final selectedCountry = _paisCtrl.text.isNotEmpty
+                          ? _paisCtrl.text
+                          : null;
+                      if (selectedCountry == null)
+                        return const Iterable<String>.empty();
                       List<String> states;
                       try {
-                        states = List<String>.from(_cscData.statesOf(selectedCountry))..sort((a, b) => a.compareTo(b));
+                        states = List<String>.from(
+                          _cscData.statesOf(selectedCountry),
+                        )..sort((a, b) => a.compareTo(b));
                       } catch (_) {
                         states = [];
                       }
@@ -176,31 +192,46 @@ class _AddressesPageState extends State<AddressesPage> {
                         return states;
                       }
                       return states.where((String option) {
-                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
                     onSelected: (String selection) {
                       _departamentoCtrl.text = selection;
                       _municipioCtrl.clear();
-                      context.read<AddressesListBloc>().add(AddressesListEvent.searchRequested(pais: _paisCtrl.text, departamento: selection));
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(labelText: 'Departamento/Estado'),
+                      context.read<AddressesListBloc>().add(
+                        AddressesListEvent.searchRequested(
+                          pais: _paisCtrl.text,
+                          departamento: selection,
+                        ),
                       );
                     },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.state),
+                          );
+                        },
                   ),
                   const SizedBox(height: 8),
                   Autocomplete<City>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      final selectedCountry = _paisCtrl.text.isNotEmpty ? _paisCtrl.text : null;
-                      final selectedState = _departamentoCtrl.text.isNotEmpty ? _departamentoCtrl.text : null;
-                      if (selectedCountry == null || selectedState == null) return const Iterable<City>.empty();
+                      final selectedCountry = _paisCtrl.text.isNotEmpty
+                          ? _paisCtrl.text
+                          : null;
+                      final selectedState = _departamentoCtrl.text.isNotEmpty
+                          ? _departamentoCtrl.text
+                          : null;
+                      if (selectedCountry == null || selectedState == null)
+                        return const Iterable<City>.empty();
                       List<City> cities;
                       try {
-                        cities = List<City>.from(_cscData.citiesOf(selectedCountry, selectedState))..sort((a, b) => a.name.compareTo(b.name));
+                        cities = List<City>.from(
+                          _cscData.citiesOf(selectedCountry, selectedState),
+                        )..sort((a, b) => a.name.compareTo(b.name));
                       } catch (_) {
                         cities = [];
                       }
@@ -208,21 +239,30 @@ class _AddressesPageState extends State<AddressesPage> {
                         return cities;
                       }
                       return cities.where((City option) {
-                        return option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        return option.name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
                     displayStringForOption: (City option) => option.name,
                     onSelected: (City selection) {
                       _municipioCtrl.text = selection.name;
-                      context.read<AddressesListBloc>().add(AddressesListEvent.searchRequested(pais: _paisCtrl.text, departamento: _departamentoCtrl.text, municipio: selection.name));
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(labelText: 'Municipio/Ciudad'),
+                      context.read<AddressesListBloc>().add(
+                        AddressesListEvent.searchRequested(
+                          pais: _paisCtrl.text,
+                          departamento: _departamentoCtrl.text,
+                          municipio: selection.name,
+                        ),
                       );
                     },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.city),
+                          );
+                        },
                   ),
                 ],
               ],
@@ -231,75 +271,95 @@ class _AddressesPageState extends State<AddressesPage> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                context.read<AddressesListBloc>().add(const AddressesListEvent.loadRequested());
+                context.read<AddressesListBloc>().add(
+                  const AddressesListEvent.loadRequested(),
+                );
               },
               child: BlocBuilder<AddressesListBloc, AddressesListState>(
                 builder: (context, state) {
                   return state.when(
-                    initial: () => const AppLoading(message: 'Cargando direcciones...'),
-                    loading: () => const AppLoading(message: 'Cargando direcciones...'),
-                    failure: (failure) => Center(child: Text('Error: ${_failureMessage(failure)}')),
+                    initial: () => AppLoading(message: AppLocalizations.of(context)!.loadingAddresses),
+                    loading: () => AppLoading(message: AppLocalizations.of(context)!.loadingAddresses),
+                    failure: (failure) => Center(child: Text(_failureMessage(context, failure))),
                     success: (items) {
                       if (items.isEmpty) {
-                        return const Center(child: Text('Sin direcciones'));
+                        return Center(child: Text(AppLocalizations.of(context)!.noAddresses));
                       }
                       return ListView.separated(
                         itemCount: items.length,
                         separatorBuilder: (_, __) => const Divider(height: 0),
                         itemBuilder: (context, index) {
                           final a = items[index];
-                          final title = a.municipio.isNotEmpty ? a.municipio : (a.departamento.isNotEmpty ? a.departamento : a.pais);
-                          final subtitle = '${a.direccion}${a.municipio.isNotEmpty ? ', ${a.municipio}' : ''}';
+                          final title = a.municipio.isNotEmpty
+                              ? a.municipio
+                              : (a.departamento.isNotEmpty
+                                    ? a.departamento
+                                    : a.pais);
+                          final subtitle =
+                              '${a.direccion}${a.municipio.isNotEmpty ? ', ${a.municipio}' : ''}';
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             child: AddressItem(
-                            title: title,
-                            subtitle: subtitle,
-                            onTap: () async {
-                              final id = a.id;
-                              if (id == null || id.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID de dirección inválido')));
-                                return;
-                              }
-                              final result = await context.push('${NamesRouter.createEditAddress}?id=$id');
-                              if (result == true && mounted) {
-                                context.read<AddressesListBloc>().add(const AddressesListEvent.loadRequested());
-                              }
-                            },
-                            onEdit: () async {
-                              final id = a.id;
-                              if (id == null || id.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID de dirección inválido')));
-                                return;
-                              }
-                              final result = await context.push('${NamesRouter.createEditAddress}?id=$id');
-                              if (result == true && mounted) {
-                                context.read<AddressesListBloc>().add(const AddressesListEvent.loadRequested());
-                              }
-                            },
-                            onDelete: () async {
-                              final id = a.id;
-                              if (id == null || id.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID de dirección inválido')));
-                                return;
-                              }
-                              final deleteAddress = GetIt.I<DeleteAddress>();
-                              final res = await deleteAddress(id);
-                              res.fold(
-                                (f) => ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(f.when(
-                                    unexpected: (m) => m ?? 'Ocurrió un error inesperado',
-                                    network: (m) => m ?? 'Problema de red',
-                                    notFound: (m) => m ?? 'No encontrado',
-                                    validation: (m) => m ?? 'Error de validación',
-                                  ))),
-                                ),
-                                (_) async {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dirección eliminada')));
-                                  if (mounted) context.read<AddressesListBloc>().add(const AddressesListEvent.loadRequested());
-                                },
-                              );
-                            },
+                              title: title,
+                              subtitle: subtitle,
+                              onTap: () async {
+                                final id = a.id;
+                                if (id == null || id.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(AppLocalizations.of(context)!.invalidAddressId)),
+                                  );
+                                  return;
+                                }
+                                final result = await context.push(
+                                  '${NamesRouter.createEditAddress}?id=$id',
+                                );
+                                if (result == true && mounted) {
+                                  context.read<AddressesListBloc>().add(
+                                    const AddressesListEvent.loadRequested(),
+                                  );
+                                }
+                              },
+                              onEdit: () async {
+                                final id = a.id;
+                                if (id == null || id.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(AppLocalizations.of(context)!.invalidAddressId)),
+                                  );
+                                  return;
+                                }
+                                final result = await context.push(
+                                  '${NamesRouter.createEditAddress}?id=$id',
+                                );
+                                if (result == true && mounted) {
+                                  context.read<AddressesListBloc>().add(
+                                    const AddressesListEvent.loadRequested(),
+                                  );
+                                }
+                              },
+                              onDelete: () async {
+                                final id = a.id;
+                                if (id == null || id.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(AppLocalizations.of(context)!.invalidAddressId)),
+                                  );
+                                  return;
+                                }
+                                final deleteAddress = GetIt.I<DeleteAddress>();
+                                final res = await deleteAddress(id);
+                                res.fold(
+                                  (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_failureMessage(context, f)))),
+                                  (_) async {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.addressDeleted)));
+                                    if (mounted)
+                                      context.read<AddressesListBloc>().add(
+                                        const AddressesListEvent.loadRequested(),
+                                      );
+                                  },
+                                );
+                              },
                             ),
                           );
                         },
@@ -315,12 +375,13 @@ class _AddressesPageState extends State<AddressesPage> {
     );
   }
 
-  String _failureMessage(Failure failure) {
+  String _failureMessage(BuildContext context, Failure failure) {
+    final t = AppLocalizations.of(context)!;
     return failure.when(
-      unexpected: (m) => m ?? 'Ocurrió un error inesperado',
-      network: (m) => m ?? 'Problema de red',
-      notFound: (m) => m ?? 'No encontrado',
-      validation: (m) => m ?? 'Error de validación',
+      unexpected: (m) => m ?? t.unexpectedError,
+      network: (m) => m ?? t.networkError,
+      notFound: (m) => m ?? t.notFoundError,
+      validation: (m) => m ?? t.validationError,
     );
   }
 }

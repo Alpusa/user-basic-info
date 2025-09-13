@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+// flutter/material imports not required here
+// Hive not required in this bloc; locale handling moved to LocaleBloc
 import '../../../domain/usecases/get_all_users.dart';
 import '../../../domain/usecases/get_all_addresses.dart';
 import '../../../domain/usecases/delete_user.dart';
@@ -12,12 +14,19 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final DeleteUser _deleteUser;
   final DeleteAddress _deleteAddress;
 
-  SettingsBloc(this._getAllUsers, this._getAllAddresses, this._deleteUser, this._deleteAddress)
-      : super(const SettingsState.initial()) {
+  SettingsBloc(
+    this._getAllUsers,
+    this._getAllAddresses,
+    this._deleteUser,
+    this._deleteAddress,
+  ) : super(const SettingsState.initial()) {
     on<LoadRequested>(_onLoad);
     on<DeleteAllUsersRequested>(_onDeleteAllUsers);
     on<DeleteAllAddressesRequested>(_onDeleteAllAddresses);
+  // Locale handling moved to LocaleBloc; SettingsBloc no longer persists locale
   }
+
+  // Locale persistence handled by LocaleBloc
 
   Future<void> _onLoad(LoadRequested event, Emitter<SettingsState> emit) async {
     emit(const SettingsState.loading());
@@ -30,10 +39,15 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     usersRes.match((l) => null, (users) => usersCount = users.length);
     addrsRes.match((l) => null, (addrs) => addrsCount = addrs.length);
 
-    emit(SettingsState.success(usersCount: usersCount, addressesCount: addrsCount));
+    emit(
+      SettingsState.success(usersCount: usersCount, addressesCount: addrsCount),
+    );
   }
 
-  Future<void> _onDeleteAllUsers(DeleteAllUsersRequested event, Emitter<SettingsState> emit) async {
+  Future<void> _onDeleteAllUsers(
+    DeleteAllUsersRequested event,
+    Emitter<SettingsState> emit,
+  ) async {
     emit(const SettingsState.loading());
     final usersRes = await _getAllUsers.call();
     int deleted = 0;
@@ -49,7 +63,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(SettingsState.success(usersCount: 0, addressesCount: 0));
   }
 
-  Future<void> _onDeleteAllAddresses(DeleteAllAddressesRequested event, Emitter<SettingsState> emit) async {
+  Future<void> _onDeleteAllAddresses(
+    DeleteAllAddressesRequested event,
+    Emitter<SettingsState> emit,
+  ) async {
     emit(const SettingsState.loading());
     final addrsRes = await _getAllAddresses.call();
     int deleted = 0;

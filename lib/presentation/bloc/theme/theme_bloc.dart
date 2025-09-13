@@ -10,7 +10,8 @@ import '../../../data/models/theme_preference_model.dart';
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   final Box preferencesBox;
 
-  ThemeBloc({required this.preferencesBox, ThemeMode? initial}) : super(ThemeState.initial(mode: initial ?? ThemeMode.system)) {
+  ThemeBloc({required this.preferencesBox, ThemeMode? initial})
+    : super(ThemeState.initial(mode: initial ?? ThemeMode.system)) {
     on<ThemeEvent>(_onEvent);
   }
 
@@ -23,9 +24,18 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
           success: (m) => m,
           failure: (_, m) => m,
         );
-        final next = current == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+        final next = current == ThemeMode.dark
+            ? ThemeMode.light
+            : ThemeMode.dark;
         emit(ThemeState.loading(mode: current));
-  await preferencesBox.put('theme_pref', ThemePreferenceModel(next == ThemeMode.dark ? 'dark' : (next == ThemeMode.light ? 'light' : 'system')));
+        await preferencesBox.put(
+          'theme_pref',
+          ThemePreferenceModel(
+            next == ThemeMode.dark
+                ? 'dark'
+                : (next == ThemeMode.light ? 'light' : 'system'),
+          ),
+        );
         emit(ThemeState.success(mode: next));
       },
       setThemeRequested: (e) async {
@@ -38,7 +48,14 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
         );
         if (mode == current) return;
         emit(ThemeState.loading(mode: current));
-  await preferencesBox.put('theme_pref', ThemePreferenceModel(mode == ThemeMode.dark ? 'dark' : (mode == ThemeMode.light ? 'light' : 'system')));
+        await preferencesBox.put(
+          'theme_pref',
+          ThemePreferenceModel(
+            mode == ThemeMode.dark
+                ? 'dark'
+                : (mode == ThemeMode.light ? 'light' : 'system'),
+          ),
+        );
         emit(ThemeState.success(mode: mode));
       },
     );

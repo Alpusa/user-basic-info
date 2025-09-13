@@ -13,12 +13,11 @@ class SearchAddresses {
     String? departamento,
     String? municipio,
     String? containsText,
-  }) =>
-      _repo.searchAddresses(
-        userId: userId,
-        pais: pais,
-        departamento: departamento,
-        municipio: municipio,
-        containsText: containsText,
-      );
+  }) => _repo.searchAddresses(
+    userId: userId,
+    pais: pais,
+    departamento: departamento,
+    municipio: municipio,
+    containsText: containsText,
+  );
 }

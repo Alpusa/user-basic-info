@@ -6,12 +6,14 @@ import '../bloc/address_form/address_form_bloc.dart';
 import '../bloc/address_form/address_form_event.dart';
 import '../bloc/address_form/address_form_state.dart';
 import '../../core/errors/failure.dart';
+import 'package:user_basic_info/l10n/app_localizations.dart';
 
 class CreateOrEditAddressPage extends StatefulWidget {
   const CreateOrEditAddressPage({super.key});
 
   @override
-  State<CreateOrEditAddressPage> createState() => _CreateOrEditAddressPageState();
+  State<CreateOrEditAddressPage> createState() =>
+      _CreateOrEditAddressPageState();
 }
 
 class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
@@ -35,7 +37,8 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
     try {
       await _cscData.load();
       if (mounted) {
-        _countries = List<String>.from(_cscData.countries)..sort((a, b) => a.compareTo(b));
+        _countries = List<String>.from(_cscData.countries)
+          ..sort((a, b) => a.compareTo(b));
         setState(() {
           _dataLoaded = true;
         });
@@ -69,8 +72,9 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
         centerTitle: true,
         title: BlocBuilder<AddressFormBloc, AddressFormState>(
           builder: (context, state) {
+            final t = AppLocalizations.of(context)!;
             return Text(
-              state.isEdit ? 'Editar dirección' : 'Crear dirección',
+              state.isEdit ? t.editAddress : t.createAddress,
               style: TextStyle(
                 color: cs.onSurface,
                 fontWeight: FontWeight.w600,
@@ -81,21 +85,27 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
       ),
       body: BlocConsumer<AddressFormBloc, AddressFormState>(
         listenWhen: (p, c) =>
-            p.isSuccess != c.isSuccess || p.failure != c.failure || p.pais != c.pais || p.departamento != c.departamento || p.municipio != c.municipio || p.direccion != c.direccion,
+            p.isSuccess != c.isSuccess ||
+            p.failure != c.failure ||
+            p.pais != c.pais ||
+            p.departamento != c.departamento ||
+            p.municipio != c.municipio ||
+            p.direccion != c.direccion,
         listener: (context, state) {
           if (state.isSuccess) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Guardado con éxito')));
+            ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.savedSuccessfully)));
             Navigator.of(context).pop(true);
           }
           if (state.failure != null) {
             final Failure f = state.failure!;
+            final t = AppLocalizations.of(context)!;
             final msg = f.when(
-              unexpected: (m) => m ?? 'Ocurrió un error inesperado',
-              network: (m) => m ?? 'Problema de red',
-              notFound: (m) => m ?? 'No encontrado',
-              validation: (m) => m ?? 'Error de validación',
+              unexpected: (m) => m ?? t.unexpectedError,
+              network: (m) => m ?? t.networkError,
+              notFound: (m) => m ?? t.notFoundError,
+              validation: (m) => m ?? t.validationError,
             );
             ScaffoldMessenger.of(
               context,
@@ -118,19 +128,24 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
           final submitted = state.submitted;
           // Actualizar listas dependientes según el estado del BLoC
           String? selectedCountry = state.pais.isNotEmpty ? state.pais : null;
-          String? selectedState = state.departamento.isNotEmpty ? state.departamento : null;
+          String? selectedState = state.departamento.isNotEmpty
+              ? state.departamento
+              : null;
           List<String> states = [];
           List<City> cities = [];
           if (_dataLoaded && selectedCountry != null) {
             try {
-              states = List<String>.from(_cscData.statesOf(selectedCountry))..sort((a, b) => a.compareTo(b));
+              states = List<String>.from(_cscData.statesOf(selectedCountry))
+                ..sort((a, b) => a.compareTo(b));
             } catch (_) {
               states = [];
             }
           }
           if (_dataLoaded && selectedCountry != null && selectedState != null) {
             try {
-              cities = List<City>.from(_cscData.citiesOf(selectedCountry, selectedState))..sort((a, b) => a.name.compareTo(b.name));
+              cities = List<City>.from(
+                _cscData.citiesOf(selectedCountry, selectedState),
+              )..sort((a, b) => a.name.compareTo(b.name));
             } catch (_) {
               cities = [];
             }
@@ -155,8 +170,10 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Cargando países...',
-                            style: TextStyle(color: cs.onSurface.withAlpha(180)),
+                            AppLocalizations.of(context)!.loadingCountries,
+                            style: TextStyle(
+                              color: cs.onSurface.withAlpha(180),
+                            ),
                           ),
                         ],
                       ),
@@ -170,101 +187,147 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
                         return _countries;
                       }
                       return _countries.where((String option) {
-                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
                     initialValue: TextEditingValue(text: _paisCtrl.text),
                     onSelected: (String selection) {
-                      context.read<AddressFormBloc>().add(AddressFormEvent.paisChanged(selection));
+                      context.read<AddressFormBloc>().add(
+                        AddressFormEvent.paisChanged(selection),
+                      );
                       // Limpiar dependientes
-                      context.read<AddressFormBloc>().add(const AddressFormEvent.departamentoChanged(''));
-                      context.read<AddressFormBloc>().add(const AddressFormEvent.municipioChanged(''));
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(labelText: 'País'),
-                        onEditingComplete: onEditingComplete,
-                        style: TextStyle(color: cs.onSurface),
+                      context.read<AddressFormBloc>().add(
+                        const AddressFormEvent.departamentoChanged(''),
+                      );
+                      context.read<AddressFormBloc>().add(
+                        const AddressFormEvent.municipioChanged(''),
                       );
                     },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.country,
+                            ),
+                            onEditingComplete: onEditingComplete,
+                            style: TextStyle(color: cs.onSurface),
+                          );
+                        },
                   ),
                   if (submitted && !state.isValidPais)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Text('Selecciona un país', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      child: Text(
+                        AppLocalizations.of(context)!.selectCountry,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                     ),
                   const SizedBox(height: 12),
 
                   // Departamento/Estado (Autocomplete)
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (selectedCountry == null) return const Iterable<String>.empty();
+                      if (selectedCountry == null)
+                        return const Iterable<String>.empty();
                       if (textEditingValue.text == '') {
                         return states;
                       }
                       return states.where((String option) {
-                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
-                    initialValue: TextEditingValue(text: _departamentoCtrl.text),
+                    initialValue: TextEditingValue(
+                      text: _departamentoCtrl.text,
+                    ),
                     onSelected: (String selection) {
-                      context.read<AddressFormBloc>().add(AddressFormEvent.departamentoChanged(selection));
+                      context.read<AddressFormBloc>().add(
+                        AddressFormEvent.departamentoChanged(selection),
+                      );
                       // Limpiar municipio dependiente
-                      context.read<AddressFormBloc>().add(const AddressFormEvent.municipioChanged(''));
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(labelText: 'Departamento/Estado'),
-                        onEditingComplete: onEditingComplete,
+                      context.read<AddressFormBloc>().add(
+                        const AddressFormEvent.municipioChanged(''),
                       );
                     },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.state,
+                            ),
+                            onEditingComplete: onEditingComplete,
+                          );
+                        },
                   ),
                   if (submitted && !state.isValidDepartamento)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Text('Selecciona un departamento/estado', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      child: Text(
+                        AppLocalizations.of(context)!.selectState,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                     ),
                   const SizedBox(height: 12),
 
                   // Municipio/Ciudad (Autocomplete)
                   Autocomplete<City>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (selectedCountry == null || selectedState == null) return const Iterable<City>.empty();
+                      if (selectedCountry == null || selectedState == null)
+                        return const Iterable<City>.empty();
                       if (textEditingValue.text == '') {
                         return cities;
                       }
                       return cities.where((City option) {
-                        return option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        return option.name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
                     displayStringForOption: (City option) => option.name,
                     initialValue: TextEditingValue(text: _municipioCtrl.text),
                     onSelected: (City selection) {
-                      context.read<AddressFormBloc>().add(AddressFormEvent.municipioChanged(selection.name));
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(labelText: 'Municipio/Ciudad'),
-                        onEditingComplete: onEditingComplete,
+                      context.read<AddressFormBloc>().add(
+                        AddressFormEvent.municipioChanged(selection.name),
                       );
                     },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.city,
+                            ),
+                            onEditingComplete: onEditingComplete,
+                          );
+                        },
                   ),
                   if (submitted && !state.isValidMunicipio)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Text('Selecciona un municipio/ciudad', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      child: Text(
+                        AppLocalizations.of(context)!.selectCity,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                     ),
                 ],
 
                 const SizedBox(height: 16),
                 Text(
-                  'Dirección',
+                  AppLocalizations.of(context)!.address,
                   style: TextStyle(color: cs.onSurface.withAlpha(180)),
                 ),
                 const SizedBox(height: 6),
@@ -272,14 +335,16 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
                   controller: _direccionCtrl,
                   maxLines: 2,
                   decoration: InputDecoration(
-                    hintText: 'Ingresa la dirección',
-                    hintStyle: TextStyle(
-                      color: cs.onSurface.withAlpha(90),
-                    ),
-                    errorText: submitted && !state.isValidDireccion ? 'Campo requerido' : null,
+                    hintText: AppLocalizations.of(context)!.enterAddress,
+                    hintStyle: TextStyle(color: cs.onSurface.withAlpha(90)),
+                    errorText: submitted && !state.isValidDireccion
+                        ? AppLocalizations.of(context)!.requiredField
+                        : null,
                   ),
                   onChanged: (value) {
-                    context.read<AddressFormBloc>().add(AddressFormEvent.direccionChanged(value));
+                    context.read<AddressFormBloc>().add(
+                      AddressFormEvent.direccionChanged(value),
+                    );
                   },
                 ),
                 const Spacer(),
@@ -290,17 +355,19 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
                         ? null
                         : () {
                             context.read<AddressFormBloc>().add(
-                                  AddressFormEvent.submitPressed(
-                                    pais: _paisCtrl.text,
-                                    departamento: _departamentoCtrl.text,
-                                    municipio: _municipioCtrl.text,
-                                    direccion: _direccionCtrl.text,
-                                  ),
-                                );
+                              AddressFormEvent.submitPressed(
+                                pais: _paisCtrl.text,
+                                departamento: _departamentoCtrl.text,
+                                municipio: _municipioCtrl.text,
+                                direccion: _direccionCtrl.text,
+                              ),
+                            );
                           },
                     style: Theme.of(context).elevatedButtonTheme.style,
                     child: Text(
-                      state.isSubmitting ? 'Guardando...' : 'Guardar',
+                      state.isSubmitting
+                          ? AppLocalizations.of(context)!.saving
+                          : AppLocalizations.of(context)!.save,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -313,4 +380,3 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
     );
   }
 }
-
