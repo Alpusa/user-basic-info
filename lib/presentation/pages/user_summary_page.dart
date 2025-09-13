@@ -48,7 +48,7 @@ class UserSummaryPage extends StatelessWidget {
           );
         }
         final theme = Theme.of(context);
-        final onSurfaceSubtle = theme.colorScheme.onSurface.withOpacity(0.7);
+  final onSurfaceSubtle = theme.colorScheme.onSurface.withAlpha((0.7 * 255).round());
         final fecha = user.fechaNacimiento
             .toLocal()
             .toString()

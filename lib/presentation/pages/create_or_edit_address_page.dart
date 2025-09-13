@@ -233,8 +233,9 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
                   // Departamento/Estado (Autocomplete)
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (selectedCountry == null)
+                      if (selectedCountry == null) {
                         return const Iterable<String>.empty();
+                      }
                       if (textEditingValue.text == '') {
                         return states;
                       }
@@ -283,8 +284,9 @@ class _CreateOrEditAddressPageState extends State<CreateOrEditAddressPage> {
                   // Municipio/Ciudad (Autocomplete)
                   Autocomplete<City>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (selectedCountry == null || selectedState == null)
+                      if (selectedCountry == null || selectedState == null) {
                         return const Iterable<City>.empty();
+                      }
                       if (textEditingValue.text == '') {
                         return cities;
                       }

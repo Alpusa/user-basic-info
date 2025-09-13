@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 
 import 'theme_event.dart';
 import 'theme_state.dart';
-import 'package:hive/hive.dart';
-import '../../../data/models/theme_preference_model.dart';
+import 'package:user_basic_info/domain/usecases/get_theme_preference.dart';
+import 'package:user_basic_info/domain/usecases/save_theme_preference.dart';
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
-  final Box preferencesBox;
+  final GetThemePreference getTheme;
+  final SaveThemePreference saveTheme;
 
-  ThemeBloc({required this.preferencesBox, ThemeMode? initial})
+  ThemeBloc({required this.getTheme, required this.saveTheme, ThemeMode? initial})
     : super(ThemeState.initial(mode: initial ?? ThemeMode.system)) {
     on<ThemeEvent>(_onEvent);
   }
@@ -28,13 +29,10 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
             ? ThemeMode.light
             : ThemeMode.dark;
         emit(ThemeState.loading(mode: current));
-        await preferencesBox.put(
-          'theme_pref',
-          ThemePreferenceModel(
-            next == ThemeMode.dark
-                ? 'dark'
-                : (next == ThemeMode.light ? 'light' : 'system'),
-          ),
+        await saveTheme(
+          next == ThemeMode.dark
+              ? 'dark'
+              : (next == ThemeMode.light ? 'light' : 'system'),
         );
         emit(ThemeState.success(mode: next));
       },
@@ -48,13 +46,10 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
         );
         if (mode == current) return;
         emit(ThemeState.loading(mode: current));
-        await preferencesBox.put(
-          'theme_pref',
-          ThemePreferenceModel(
-            mode == ThemeMode.dark
-                ? 'dark'
-                : (mode == ThemeMode.light ? 'light' : 'system'),
-          ),
+        await saveTheme(
+          mode == ThemeMode.dark
+              ? 'dark'
+              : (mode == ThemeMode.light ? 'light' : 'system'),
         );
         emit(ThemeState.success(mode: mode));
       },

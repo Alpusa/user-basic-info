@@ -88,35 +88,35 @@ class CreateOrEditUserPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   AppLocalizations.of(context)!.firstName,
-                  style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
+                  style: TextStyle(color: cs.onSurface.withAlpha((0.7 * 255).round())),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _nombreCtrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.enterFirstName,
-                    hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
+                    hintStyle: TextStyle(color: cs.onSurface.withAlpha((0.35 * 255).round())),
                     errorText: submitted && !state.isValidNombre ? AppLocalizations.of(context)!.requiredField : null,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context)!.lastName,
-                  style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
+                  style: TextStyle(color: cs.onSurface.withAlpha((0.7 * 255).round())),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _apellidoCtrl,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.enterLastName,
-                    hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
+                    hintStyle: TextStyle(color: cs.onSurface.withAlpha((0.35 * 255).round())),
                     errorText: submitted && !state.isValidApellido ? AppLocalizations.of(context)!.requiredField : null,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context)!.birthDate,
-                  style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
+                  style: TextStyle(color: cs.onSurface.withAlpha((0.7 * 255).round())),
                 ),
                 const SizedBox(height: 6),
                 GestureDetector(
@@ -148,11 +148,11 @@ class CreateOrEditUserPage extends StatelessWidget {
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.birthDateHint,
                         hintStyle: TextStyle(
-                          color: cs.onSurface.withOpacity(0.35),
+                          color: cs.onSurface.withAlpha((0.35 * 255).round()),
                         ),
                         suffixIcon: Icon(
                           Icons.calendar_today,
-                          color: cs.onSurface.withOpacity(0.35),
+                          color: cs.onSurface.withAlpha((0.35 * 255).round()),
                         ),
                         errorText: submitted && !state.isValidFecha ? AppLocalizations.of(context)!.invalidDate : null,
                       ),

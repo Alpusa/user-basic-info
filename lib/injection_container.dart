@@ -6,6 +6,10 @@ import 'data/models/user/user_model.dart';
 import 'data/models/address/address_model.dart';
 
 import 'domain/repositories/user_repository.dart';
+import 'domain/usecases/save_theme_preference.dart';
+import 'domain/usecases/get_theme_preference.dart';
+import 'domain/usecases/save_locale_preference.dart';
+import 'domain/usecases/get_locale_preference.dart';
 import 'domain/usecases/save_user.dart';
 import 'data/repositories/user_repository_impl.dart';
 import 'domain/repositories/address_repository.dart';
@@ -31,6 +35,8 @@ import 'presentation/bloc/settings/settings_bloc.dart';
 import 'presentation/bloc/theme/theme_bloc.dart';
 import 'presentation/bloc/locale/locale_bloc.dart';
 import 'data/models/theme_preference_model.dart';
+import 'domain/repositories/preferences_repository.dart';
+import 'data/repositories/preferences_repository_impl.dart';
 
 final sl = GetIt.instance;
 
@@ -60,6 +66,12 @@ Future<void> initDependencies() async {
   sl.registerSingleton<Box>(preferencesBox);
 
   // Domain
+  // Preference usecases
+  sl.registerFactory(() => SaveThemePreference(sl()));
+  sl.registerFactory(() => GetThemePreference(sl()));
+  sl.registerFactory(() => SaveLocalePreference(sl()));
+  sl.registerFactory(() => GetLocalePreference(sl()));
+
   sl.registerFactory(() => SaveUser(sl()));
   sl.registerFactory(() => SaveAddress(sl()));
   sl.registerFactory(() => GetUserById(sl()));
@@ -76,15 +88,24 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => DeleteAddressesByUserId(sl()));
 
   // Data
-  sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl());
-  sl.registerLazySingleton<AddressRepository>(() => AddressRepositoryImpl());
+  sl.registerLazySingleton<UserRepository>(
+    () => UserRepositoryImpl(sl<Box<UserModel>>(), sl<AddressRepository>()),
+  );
+  sl.registerLazySingleton<AddressRepository>(
+    () => AddressRepositoryImpl(sl<Box<AddressModel>>(), sl<Box<UserModel>>()),
+  );
+
+  // Preferences repository (wraps preferences box)
+  sl.registerLazySingleton<PreferencesRepository>(
+    () => PreferencesRepositoryImpl(sl<Box>()),
+  );
 
   // Presentation (BLoC/Cubit)
   sl.registerFactory(() => UsersListBloc(sl(), sl()));
   sl.registerFactory(() => AddressesListBloc(sl(), sl()));
   sl.registerFactory(() => UserSummaryCubit(sl(), sl()));
   sl.registerFactory(() => SettingsBloc(sl(), sl(), sl(), sl()));
-  sl.registerLazySingleton(() => LocaleBloc(preferencesBox: preferencesBox, initial: null));
+  sl.registerLazySingleton(() => LocaleBloc(getLocale: sl<GetLocalePreference>(), saveLocale: sl<SaveLocalePreference>(), initial: null));
   // Ensure locale preference model is recognized by Hive (adapter generated separately)
   // ThemeBloc: read stored theme object if exists
   final storedPref = preferencesBox.get('theme_pref') as ThemePreferenceModel?;
@@ -102,7 +123,7 @@ Future<void> initDependencies() async {
     }
   }
   sl.registerLazySingleton(
-    () => ThemeBloc(preferencesBox: preferencesBox, initial: initialMode),
+    () => ThemeBloc(getTheme: sl<GetThemePreference>(), saveTheme: sl<SaveThemePreference>(), initial: initialMode),
   );
   sl.registerFactory(
     () => UserFormBloc(

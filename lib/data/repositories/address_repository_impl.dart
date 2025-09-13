@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,8 +10,10 @@ import '../models/address/address_model.dart';
 import '../models/user/user_model.dart';
 
 class AddressRepositoryImpl implements AddressRepository {
-  final Box<AddressModel> _addressesBox = GetIt.I<Box<AddressModel>>();
-  final Box<UserModel> _usersBox = GetIt.I<Box<UserModel>>();
+  final Box<AddressModel> _addressesBox;
+  final Box<UserModel> _usersBox;
+
+  AddressRepositoryImpl(this._addressesBox, this._usersBox);
 
   @override
   Future<Either<Failure, Unit>> saveAddressForUser(
@@ -164,8 +165,9 @@ class AddressRepositoryImpl implements AddressRepository {
   ) async {
     try {
       final existing = _addressesBox.get(id);
-      if (existing == null)
+      if (existing == null) {
         return left(const Failure.notFound('Dirección no existe'));
+      }
       final updated = AddressModel(
         id: id,
         userId: address.userId ?? existing.userId,

@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,8 +9,10 @@ import '../../domain/repositories/address_repository.dart';
 import '../models/user/user_model.dart';
 
 class UserRepositoryImpl implements UserRepository {
-  final Box<UserModel> _usersBox = GetIt.I<Box<UserModel>>();
-  final AddressRepository _addressRepo = GetIt.I<AddressRepository>();
+  final Box<UserModel> _usersBox;
+  final AddressRepository _addressRepo;
+
+  UserRepositoryImpl(this._usersBox, this._addressRepo);
 
   @override
   Future<Either<Failure, Unit>> saveUser(User user) async {

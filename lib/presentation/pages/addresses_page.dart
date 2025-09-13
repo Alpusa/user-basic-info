@@ -140,9 +140,7 @@ class _AddressesPageState extends State<AddressesPage> {
                 const SizedBox(height: 12),
 
                 // Filtros País/Departamento/Municipio
-                if (!_dataLoaded)
-                  const SizedBox.shrink()
-                else ...[
+                if (!_dataLoaded) const SizedBox.shrink() else ...[
                   Autocomplete<String>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       if (textEditingValue.text == '') {
@@ -178,8 +176,9 @@ class _AddressesPageState extends State<AddressesPage> {
                       final selectedCountry = _paisCtrl.text.isNotEmpty
                           ? _paisCtrl.text
                           : null;
-                      if (selectedCountry == null)
+                      if (selectedCountry == null) {
                         return const Iterable<String>.empty();
+                      }
                       List<String> states;
                       try {
                         states = List<String>.from(
@@ -225,8 +224,9 @@ class _AddressesPageState extends State<AddressesPage> {
                       final selectedState = _departamentoCtrl.text.isNotEmpty
                           ? _departamentoCtrl.text
                           : null;
-                      if (selectedCountry == null || selectedState == null)
+                      if (selectedCountry == null || selectedState == null) {
                         return const Iterable<City>.empty();
+                      }
                       List<City> cities;
                       try {
                         cities = List<City>.from(
@@ -316,8 +316,9 @@ class _AddressesPageState extends State<AddressesPage> {
                                 final result = await context.push(
                                   '${NamesRouter.createEditAddress}?id=$id',
                                 );
-                                if (result == true && mounted) {
-                                  context.read<AddressesListBloc>().add(
+                                if (result == true) {
+                                  if (!mounted) return;
+                                  this.context.read<AddressesListBloc>().add(
                                     const AddressesListEvent.loadRequested(),
                                   );
                                 }
@@ -333,8 +334,9 @@ class _AddressesPageState extends State<AddressesPage> {
                                 final result = await context.push(
                                   '${NamesRouter.createEditAddress}?id=$id',
                                 );
-                                if (result == true && mounted) {
-                                  context.read<AddressesListBloc>().add(
+                                if (result == true) {
+                                  if (!mounted) return;
+                                  this.context.read<AddressesListBloc>().add(
                                     const AddressesListEvent.loadRequested(),
                                   );
                                 }
@@ -348,15 +350,26 @@ class _AddressesPageState extends State<AddressesPage> {
                                   return;
                                 }
                                 final deleteAddress = GetIt.I<DeleteAddress>();
+                                final messenger = ScaffoldMessenger.of(this.context);
+                                final bloc = this.context.read<AddressesListBloc>();
+                                final t = AppLocalizations.of(this.context)!;
                                 final res = await deleteAddress(id);
                                 res.fold(
-                                  (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_failureMessage(context, f)))),
+                                  (f) {
+                                    final failureMsg = f.when(
+                                      unexpected: (m) => m ?? t.unexpectedError,
+                                      network: (m) => m ?? t.networkError,
+                                      notFound: (m) => m ?? t.notFoundError,
+                                      validation: (m) => m ?? t.validationError,
+                                    );
+                                    messenger.showSnackBar(SnackBar(content: Text(failureMsg)));
+                                  },
                                   (_) async {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.addressDeleted)));
-                                    if (mounted)
-                                      context.read<AddressesListBloc>().add(
-                                        const AddressesListEvent.loadRequested(),
-                                      );
+                                    messenger.showSnackBar(SnackBar(content: Text(t.addressDeleted)));
+                                    if (!mounted) return;
+                                    bloc.add(
+                                      const AddressesListEvent.loadRequested(),
+                                    );
                                   },
                                 );
                               },

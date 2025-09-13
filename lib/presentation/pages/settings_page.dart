@@ -19,7 +19,7 @@ class SettingsPage extends StatelessWidget {
     return BlocBuilder<SettingsBloc, SettingsState>(
       builder: (context, state) {
         final theme = Theme.of(context);
-        final onSurfaceSubtle = theme.colorScheme.onSurface.withOpacity(0.7);
+  final onSurfaceSubtle = theme.colorScheme.onSurface.withAlpha((0.7 * 255).round());
 
         final isLoading = state.maybeWhen(
           loading: (usersCount, addressesCount) => true,
@@ -178,7 +178,7 @@ class SettingsPage extends StatelessWidget {
                               context: context,
                               builder: (c) => AlertDialog(
                                 title: Text(t.confirm),
-                                content: Text(t.deleteAllAddresses + '?'),
+                                content: Text('${t.deleteAllAddresses}?'),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(c).pop(false),
@@ -212,7 +212,7 @@ class SettingsPage extends StatelessWidget {
                               context: context,
                               builder: (c) => AlertDialog(
                                 title: Text(t.confirm),
-                                content: Text(t.deleteAllUsers + '?'),
+                                content: Text('${t.deleteAllUsers}?'),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(c).pop(false),
