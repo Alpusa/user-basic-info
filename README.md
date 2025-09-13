@@ -2,6 +2,11 @@
 
 Adjunto/comparto mi solución a la prueba técnica asignada. He desarrollado el proyecto en Flutter, siguiendo buenas prácticas (Clean Architecture, BLoC, DI con get_it) y lo he documentado para facilitar instalación, ejecución y evaluación.
 
+## Releases
+
+- Último release: [v1.0.0+1](https://github.com/Alpusa/user-basic-info/releases/tag/v1.0.0%2B1)
+- Todos los releases: [Releases](https://github.com/Alpusa/user-basic-info/releases)
+
 ## Resumen
 
 - Gestión de usuarios y direcciones con persistencia local (Hive).
